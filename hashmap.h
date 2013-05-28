@@ -20,7 +20,7 @@
 class HASH_MAP
 {
 public:
-	HASH_MAP();
+	HASH_MAP(uint NumBuckets);
 	~HASH_MAP();
 
 public:
@@ -41,7 +41,7 @@ private:
 	};
 
 	BUCKET**  Buckets;
-	static const uint NUM_BUCKETS = 1024;
+	uint NumBuckets;
 
 	POOL_HEAP BucketHeap;
 
@@ -50,6 +50,7 @@ private:
 private:
 	BUCKET** FindInternal(uint Hash, BUCKET** Prev = null);
 	bool InsertInternal(uint Hash, void* key);
+	bool InsertInternal(BUCKET* Bucket);
 	bool Resize(uint NewNumBuckets);
 	BUCKET* GetNewBucket();
 	void FreeBucket(BUCKET* Bucket);

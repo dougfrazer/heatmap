@@ -16,8 +16,9 @@
 //*****************************************************************************
 // Constructor/Destructor
 //*****************************************************************************
-HASH_MAP::HASH_MAP() :
-	BucketHeap(sizeof(BUCKET))
+HASH_MAP::HASH_MAP(uint _NumBuckets) :
+	BucketHeap(sizeof(BUCKET)),
+	NumBuckets(_NumBuckets)
 {
 	Size = 0;
 }
@@ -33,11 +34,11 @@ HASH_MAP::~HASH_MAP()
 //*****************************************************************************
 void HASH_MAP::Init()
 {
-	int BufferSize = alignup( NUM_BUCKETS*sizeof(BUCKET*), 64 );
+	int BufferSize = alignup( NumBuckets*sizeof(BUCKET*), 8 );
     Buckets = (BUCKET**)Malloc( BufferSize, __FILE__, __LINE__ );
     if(Buckets == null) return;
 
-    memset(Buckets, (u8)0, BufferSize);
+    memset(Buckets, '\0', BufferSize);
 }
 //*****************************************************************************
 void HASH_MAP::Deinit()
@@ -46,7 +47,7 @@ void HASH_MAP::Deinit()
     BUCKET* NextBucket;
 
     if(Buckets == null) return;
-    for(uint i = 0; i < NUM_BUCKETS; i++) {
+    for(uint i = 0; i < NumBuckets; i++) {
         Bucket = Buckets[i];
         while(Bucket != null) {
             NextBucket = Bucket->next;
@@ -105,7 +106,7 @@ HASH_MAP::BUCKET** HASH_MAP::FindInternal(u32 Hash, BUCKET** Prev)
 
     if(Buckets == null) return null;
 
-    Index = Hash % NUM_BUCKETS;
+    Index = Hash % NumBuckets;
     Iter = &Buckets[Index];
     if(Prev != null) *Prev = null;
 
@@ -141,6 +142,77 @@ bool HASH_MAP::InsertInternal(u32 Hash, void* val)
     if(Prev != null) Prev->next = *Bucket;
     Size++;
 
+	if(Size/(float)NumBuckets > 0.75) {
+		if(!Resize(NumBuckets * 2)) {
+			return false;
+		}
+	}
+
+    return true;
+}
+//*****************************************************************************
+bool HASH_MAP::InsertInternal(BUCKET* Bucket)
+{
+	BUCKET*  Prev;
+    BUCKET** BucketLoc;
+
+    BucketLoc = FindInternal(Bucket->hash, &Prev);
+    if(BucketLoc == null) {
+        error("Out of memory");
+        return false;
+    }
+    if(*BucketLoc != null) {
+        error("Key already exists in map (or another key hashed to same value)");
+        return false;
+    }
+    *BucketLoc = Bucket;
+	(*BucketLoc)->next = null;
+    if(Prev != null) Prev->next = *BucketLoc;
+    Size++;
+
+	if(Size/(float)NumBuckets > 0.75) {
+		if(!Resize(NumBuckets * 2)) {
+			return false;
+		}
+	}
+
+    return true;
+}
+//*****************************************************************************
+bool HASH_MAP::Resize(uint NewNumBuckets)
+{
+    BUCKET** NewBuckets;
+    BUCKET** OldBuckets;
+    BUCKET*  Bucket;
+    BUCKET*  NextBucket;
+    uint     OldNumBuckets;
+
+	int BufferSize = alignup(NewNumBuckets*sizeof(BUCKET*),8);
+    NewBuckets = (BUCKET**)Malloc(BufferSize, __FILE__, __LINE__);
+    if(NewBuckets == null) {
+        error("Failed to alloc new space for resizing");
+        return false;
+    }
+    memset(NewBuckets, '\0', BufferSize);
+
+    OldBuckets = Buckets;
+    OldNumBuckets = NumBuckets;
+
+    Buckets = NewBuckets;
+    NumBuckets = NewNumBuckets;
+    Size = 0;
+    for(uint i = 0; i < OldNumBuckets; i++) {
+        Bucket = OldBuckets[i];
+        while(Bucket != null) {
+            NextBucket = Bucket->next;
+            if(!InsertInternal(Bucket)) {
+                error("Failed to insert bucket");
+                return false;
+            }
+            Bucket = NextBucket;
+        }
+    }
+    Free(OldBuckets, __FILE__, __LINE__);
     return true;
 }
 //*****************************************************************************
@@ -156,7 +228,7 @@ void HASH_MAP::FreeBucket(BUCKET* Bucket)
 //*****************************************************************************
 void* HASH_MAP::GetFirst(u32* Hash)
 {
-	for(uint i = 0; i < NUM_BUCKETS; i++) {
+	for(uint i = 0; i < NumBuckets; i++) {
 		if(Buckets[i] != null) {
 			*Hash = Buckets[i]->hash;
 			return Buckets[i]->val;
@@ -167,7 +239,7 @@ void* HASH_MAP::GetFirst(u32* Hash)
 //*****************************************************************************
 void* HASH_MAP::GetNext(u32 Hash, void* Data, u32* OutHash)
 {
-	BUCKET* Bucket = Buckets[Hash % NUM_BUCKETS];
+	BUCKET* Bucket = Buckets[Hash % NumBuckets];
 	bool BucketFound = false;
 
 	while(Bucket != null) {
@@ -182,7 +254,7 @@ void* HASH_MAP::GetNext(u32 Hash, void* Data, u32* OutHash)
 	}
 	assert(BucketFound);
 
-	for(uint i = Hash % NUM_BUCKETS + 1; i < NUM_BUCKETS; i++) {
+	for(uint i = Hash % NumBuckets + 1; i < NumBuckets; i++) {
 		if(Buckets[i] != null) {
 			*OutHash = Buckets[i]->hash;
 			return Buckets[i]->val;

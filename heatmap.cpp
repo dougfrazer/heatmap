@@ -16,7 +16,7 @@ HEAT_MAP::HEAT_MAP( int _Resolution ) :
 	Resolution(_Resolution),
 	CounterHeap(sizeof(COUNTER)),
 	NodeHeap(sizeof(NODE)),
-	NodeMap()
+	NodeMap(1024)
 {
 	NodeMap.Init();
 }
