@@ -41,6 +41,8 @@ private:
 	struct SEGMENT {
 		void* Memory;
 		u8*   BlockUsage;
+		bool  SegmentFull;
+		int   PrevFreeBlock;
 	};
 	static const uint MIN_BLOCKS_PER_NODE_LOG_2 = 6; // 2^6 blocks minimum = 64 blocks
 	SEGMENT BlockSegments[64 - MIN_BLOCKS_PER_NODE_LOG_2]; // enough for all addressable memory space

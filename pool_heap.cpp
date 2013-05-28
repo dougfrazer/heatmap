@@ -19,17 +19,22 @@ POOL_HEAP::~POOL_HEAP()
 void* POOL_HEAP::GetBlock()
 {
 	for(int Segment = 0; Segment < FreeSegment; Segment++) {
+		if(BlockSegments[Segment].SegmentFull) continue;
 		int NumBlocks = 0x1 << (Segment + MIN_BLOCKS_PER_NODE_LOG_2);
-		for(int i = 0; i < NumBlocks / 8; i++) {
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 0)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 0; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 0) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 1)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 1; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 1) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 2)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 2; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 2) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 3)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 3; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 3) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 4)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 4; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 4) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 5)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 5; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 5) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 6)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 6; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 6) ); }
-			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 7)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 7; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 7) ); }
-		}
+		int MaxBlockUsage = NumBlocks / 8;
+		int i = BlockSegments[Segment].PrevFreeBlock;
+		do {
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 0)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 0; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 0) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 1)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 1; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 1) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 2)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 2; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 2) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 3)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 3; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 3) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 4)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 4; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 4) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 5)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 5; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 5) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 6)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 6; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 6) ); }
+			if( (BlockSegments[Segment].BlockUsage[i] & (0x1 << 7)) == 0 ) { BlockSegments[Segment].BlockUsage[i] |= 0x1 << 7; BlockSegments[Segment].PrevFreeBlock = i; return (void*)( (u8*)BlockSegments[Segment].Memory + BlockSize*(i*8 + 7) ); }
+			i = i + 1 == MaxBlockUsage ? 0 : i + 1;
+		} while(i != BlockSegments[Segment].PrevFreeBlock);
+		BlockSegments[Segment].SegmentFull = true;
 	}
 	Grow();
 	return GetBlock();
@@ -56,6 +61,8 @@ void POOL_HEAP::FreeBlock(void* Address)
 
 	// Unset the "is in use" flag, clear the memory
 	BlockSegments[Segment].BlockUsage[BlockUsageAddr/8] &= ~( 0x1 << BlockUsageAddr % 8 );
+	BlockSegments[Segment].SegmentFull = false;
+	BlockSegments[Segment].PrevFreeBlock = BlockUsageAddr/8;
 	memset(Address, '\0', BlockSize);
 }
 //******************************************************************************
@@ -74,6 +81,8 @@ void POOL_HEAP::Grow()
 
 	BlockSegments[FreeSegment].BlockUsage = (u8*)Buffer;
 	BlockSegments[FreeSegment].Memory = (void*)&(BlockSegments[FreeSegment].BlockUsage[NumBlocks/8]);
+	BlockSegments[FreeSegment].SegmentFull = false;
+	BlockSegments[FreeSegment].PrevFreeBlock = 0;
 	FreeSegment++;
 }
 //******************************************************************************

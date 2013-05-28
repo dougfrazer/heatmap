@@ -24,7 +24,7 @@ int main()
 	sprintf_s(string, 256, "Monster Kill Value From 22-23/22-23: %1.0f\n", HeatMap.GetValue(MONSTER_KILL,22,23,22,23));
 	OutputDebugString(string);
 
-	int BufferSize = 2*1024*1024;
+	int BufferSize = 20*1024*1024;
 	void* Buffer = Malloc(BufferSize, __FILE__, __LINE__);
 
 	HeatMap.Serialize(Buffer, BufferSize);
