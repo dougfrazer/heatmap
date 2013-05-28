@@ -36,7 +36,7 @@ public:
 	void  FreeBlock(void* Block);
 
 private:
-	void Grow(bool IncreaseSegment = false);
+	void Grow();
 
 	struct SEGMENT {
 		void* Memory;
