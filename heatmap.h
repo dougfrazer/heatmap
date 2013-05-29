@@ -38,7 +38,7 @@ public:
 	void Serialize   ( void* Buffer, size_t size );
 	void Deserialize ( void* Buffer, size_t size );
 
-	void Draw        ( COUNTER_VALUE Value, int startx, int starty, int endx, int endy );
+	void DrawBitmap  ( HDC hdc, COUNTER_VALUE Value, int startx, int starty, int endx, int endy );
 
 private:
 	// A single value within a node

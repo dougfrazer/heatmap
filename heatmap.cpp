@@ -248,70 +248,35 @@ u32 HEAT_MAP::CoordinateToZHash( const int _x, const int _y )
     return z;
 }
 //******************************************************************************
-
-
-
-
-
-
-//******************************************************************************
-// DEBUG ONLY
-//******************************************************************************
-void HEAT_MAP::Draw( COUNTER_VALUE Value, int startx, int starty, int endx, int endy )
+void HEAT_MAP::DrawBitmap( HDC hdc, COUNTER_VALUE Value, int startx, int starty, int endx, int endy )
 {
-	static const char * ValueStrings[MAX_COUNTER_VALUE] = 
-	{
-	"GOLD_DROP",
-	"MONSTER_KILL",
-	"SKILL_GAIN",
-	};
-	char string[256];
+	// Create some windows objects
+	HBITMAP Bitmap = CreateCompatibleBitmap(hdc, endx - startx, endy - starty);
+	SelectObject(hdc, Bitmap);
+	
+	// Fill screen with black
+	RECT Rect;
+	Rect.left = startx;
+	Rect.top = starty;
+	Rect.bottom = endy;
+	Rect.right = endx;
+	FillRect(hdc, &Rect, CreateSolidBrush(RGB(0,0,0)));
 
-	for(int x = startx/Resolution; x <= endx + Resolution; x+= Resolution) {
-		OutputDebugString("*****");
-	}
-	OutputDebugString("\n");
-	sprintf_s(string, 256, "- Heat map for %s\n", ValueStrings[Value]);
-	OutputDebugString(string);
-	for(int x = startx/Resolution; x <= endx + Resolution; x+= Resolution) {
-		OutputDebugString("*****");
-	}
-	OutputDebugString("\n    ");
-	for(int x = startx/Resolution; x <= endx; x+= Resolution) {
-		sprintf_s(string, 256, " %3d ", x);
-		OutputDebugString(string);
-	}
-	OutputDebugString("\n    ");
-	for(int x = startx/Resolution; x <= endx + Resolution; x+= Resolution) {
-		OutputDebugString("-----");
-	}
-	OutputDebugString("\n");
-
-	for(int y = starty/Resolution; y <= endy; y += Resolution) {
-		sprintf_s(string, 256, "%3d | ", y);
-		OutputDebugString(string);
-		for(int x = startx/Resolution; x <= endx; x += Resolution) {
-			NODE* Node = FindNode(x,y);
-			if(Node == null) {
-				OutputDebugString("  .  ");
-			} else {
-				bool CounterFound = false;
-				COUNTER* Counters = Node->Counters;
-				while(Counters != null) {
-					if(Counters->Value == Value) {
-						sprintf_s(string, 256, " %3.0f ", Counters->v);
-						OutputDebugString(string);
-						CounterFound = true;
-						break;
-					}
-					assert(Counters != Counters->Next);
-					Counters = Counters->Next;
-				}
-				if(!CounterFound) OutputDebugString(" . ");
+	// Write out the values we have
+	uint Hash;
+	NODE* Node;
+	COUNTER* Counter;
+	Node = (NODE*)NodeMap.GetFirst(&Hash);
+	while( Node != null ) {
+		Counter = Node->Counters;
+		while(Counter != null) {
+			if(Counter->Value == Value) {
+				int r = clamp((int)Counter->v, 0, 10);
+				r = (int)LinearInterpolate(r, 0, 10, 0, 255);
+				SetPixel(hdc, Node->x, Node->y, RGB(r,0,0));
 			}
+			Counter = Counter->Next;
 		}
-		sprintf_s(string, 256, "\n", y);
-		OutputDebugString(string);
+		Node = (NODE*)NodeMap.GetNext(Hash, Node, &Hash);
 	}
 }
-//******************************************************************************

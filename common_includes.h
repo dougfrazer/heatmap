@@ -17,6 +17,7 @@ typedef unsigned char u8;
 #define bitcountof(x)   sizeof(x)*8
 #define alignup(x, v)   ( x + v - 1 & ~(v - 1) )
 #define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
+#define LinearInterpolate(x, x0, x1, y0, y1) ( y0+ ( (float)(y1-y0) * ( (float)(x-x0)/(float)(x1-x0) ) ) )
 inline void pointer_make_relative(void** x) { *x = (void*)((intptr_t)*x + 1 - (intptr_t)x); }
 inline void pointer_make_absolute(void** x) { *x = (void*)((intptr_t)*x - 1 + (intptr_t)x); }
 __forceinline void* Malloc( size_t size, const char* File = __FILE__, int Line = __LINE__ ) {
