@@ -16,7 +16,7 @@ HEAT_MAP::HEAT_MAP( int _Resolution ) :
 	Resolution(_Resolution),
 	CounterHeap(sizeof(COUNTER)),
 	NodeHeap(sizeof(NODE)),
-	NodeMap(1 * 1024 * 1024)  // assume millions of nodes
+	NodeMap(100 * 1024)  // assume hundreds of thousands of nodes
 {
 }
 //******************************************************************************

@@ -32,18 +32,6 @@ HASH_MAP::HASH_MAP(uint _NumBuckets) :
 //*****************************************************************************
 HASH_MAP::~HASH_MAP()
 {	
-	BUCKET* Bucket;
-	BUCKET* NextBucket;
-
-	if(Buckets == null) return;
-	for(uint i = 0; i < NumBuckets; i++) {
-		Bucket = Buckets[i];
-		while(Bucket != null) {
-			NextBucket = Bucket->next;
-			FreeBucket(Bucket);
-			Bucket = NextBucket;
-		}
-	}
 	Free(Buckets, __FILE__, __LINE__);
 }
 //*****************************************************************************

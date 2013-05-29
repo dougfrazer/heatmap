@@ -14,6 +14,7 @@
 #include "pool_heap.h"
 #include "hashmap.h"
 
+// Represents values that we would be interested in counting
 enum COUNTER_VALUE
 {
 	GOLD_DROP,
@@ -21,9 +22,6 @@ enum COUNTER_VALUE
 	SKILL_GAIN,
 	MAX_COUNTER_VALUE,
 };
-
-
-
 
 class HEAT_MAP
 {

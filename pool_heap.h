@@ -29,21 +29,18 @@ public:
 	virtual ~POOL_HEAP();
 
 public:
-	void* GetBlock();
-	void  FreeBlock(void* Block);
+	void* GetBlock  ( void );
+	void  FreeBlock ( void* Block );
 
 private:
-	void Grow();
+	void  Grow      ( void );
 
-	// TEST FUNCTIONS
-	uint GetNumFreeNodes();
-	void TestFree();
-
-
+	// Stored within our free memory to create a list of free nodes
 	struct BLOCK {
 		BLOCK* Next;
 	};
 
+	// The heap will contain multiple non-contiguous segments
 	struct SEGMENT {
 		void*  Memory;
 		BLOCK* FreeBlock;
@@ -54,6 +51,10 @@ private:
 	int   LastSegment;
 	int   PrevFreeSegment;
 	int	  BlockSize;
+	
+	// TEST FUNCTIONS
+	uint GetNumFreeNodes();
+	void TestFree();
 };
 
 #endif

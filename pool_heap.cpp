@@ -45,7 +45,7 @@ void* POOL_HEAP::GetBlock()
 //******************************************************************************
 void POOL_HEAP::FreeBlock(void* Address)
 {
-	// Find the segment that it belongs to, this is a max of a 24 object search, usually much smaller
+	// Find the segment that it belongs to, this is a max of a 24 iterations, usually much smaller
 	int Segment = 0;
 	for( ; Segment <= LastSegment; Segment++) {
 		if((intptr_t)Address - (intptr_t)Segments[Segment].Memory < BlockSize * (0x1 << (Segment + MIN_BLOCKS_PER_NODE_LOG_2)) &&
@@ -65,7 +65,6 @@ void POOL_HEAP::FreeBlock(void* Address)
 	Segments[Segment].FreeBlock->Next = PrevFreeBlock;
 }
 //******************************************************************************
-
 void POOL_HEAP::Grow()
 {
 	assert(LastSegment >= 0 && LastSegment < countof(Segments));
@@ -92,6 +91,8 @@ void POOL_HEAP::Grow()
 	LastSegment++;
 }
 //******************************************************************************
+
+
 
 //******************************************************************************
 // TEST CODE

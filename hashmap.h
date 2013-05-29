@@ -24,12 +24,12 @@ public:
 	~HASH_MAP();
 
 public:
-	bool  Insert(u32 Hash, void* val);
-	bool  Remove(u32 Hash);
-	void* GetValue(u32 Hash);
-	void* Find(u32 Hash) {return GetValue(Hash);}
-	void* GetFirst(u32* Hash);
-	void* GetNext(u32 Hash, void* Data, u32* OutHash);
+	bool  Insert     ( u32 Hash, void* val );
+	bool  Remove     ( u32 Hash );
+	void* GetValue   ( u32 Hash );
+	void* Find       ( u32 Hash ) {return GetValue(Hash);}
+	void* GetFirst   ( u32* Hash );
+	void* GetNext    ( u32 Hash, void* Data, u32* OutHash );
 
 private:
 	struct BUCKET {
@@ -46,12 +46,12 @@ private:
 	uint    Size;
 
 private:
-	BUCKET** FindInternal(uint Hash, BUCKET** Prev = null);
-	bool InsertInternal(uint Hash, void* key);
-	bool InsertInternal(BUCKET* Bucket);
-	bool Resize(uint NewNumBuckets);
-	BUCKET* GetNewBucket();
-	void FreeBucket(BUCKET* Bucket);
+	BUCKET** FindInternal    ( uint Hash, BUCKET** Prev = null );
+	bool     InsertInternal  ( uint Hash, void* key );
+	bool     InsertInternal  ( BUCKET* Bucket );
+	bool     Resize          ( uint NewNumBuckets );
+	BUCKET*  GetNewBucket    ( void );
+	void     FreeBucket      ( BUCKET* Bucket );
 };
 
 #endif

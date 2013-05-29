@@ -25,7 +25,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 
-		HeatMap.DrawBitmap(hdc, GOLD_DROP, 0,0,10000,10000);
+		HeatMap.DrawBitmap(hdc, GOLD_DROP, 0,0,1000,1000);
 
 		EndPaint(hwnd, &ps);
 		break;
@@ -64,12 +64,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			HeatMap.AddValue(GOLD_DROP, 1, (rand() % (endx - startx)) + startx, (rand() % (endy - starty)) + starty);
 		}
 	}
-	/*
+	/* Uncoment this for very large vertex tests
 	for(int i = 0; i < 10000000; i++) {
-		HeatMap.AddValue(GOLD_DROP, 1, rand() % 1000, rand() % 1000);
+		HeatMap.AddValue(GOLD_DROP, 1, rand() % 10000, rand() % 10000);
 	}
 	for(int i = 0; i < 10000000; i++) {
-		HeatMap.AddValue(MONSTER_KILL, 1, rand() % 1000, rand() % 1000);
+		HeatMap.AddValue(MONSTER_KILL, 1, rand() % 1000, rand() % 10000);
 	}
 
 	// 2 million random drops from 0,0 to 10,10
@@ -80,6 +80,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		HeatMap.AddValue(MONSTER_KILL, 1, rand() % 10, rand() % 10);
 	}
 	*/
+	
     WNDCLASSEX wcex;
 
     wcex.cbSize = sizeof(WNDCLASSEX);
