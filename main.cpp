@@ -1,4 +1,12 @@
-
+//******************************************************************************
+// Main
+// ----
+//   All the graphics code is shamelessly copy/pasted from the windows documentation:
+//   http://msdn.microsoft.com/en-us/library/vstudio/bb384843.aspx
+//
+// @author Doug Frazer
+// May 2013
+//******************************************************************************
 
 #include "heatmap.h"
 
@@ -33,10 +41,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 // Global variables
 
-// The main window class name.
 static TCHAR szWindowClass[] = ("win32app");
-
-// The string that appears in the application's title bar.
 static TCHAR szTitle[] = ("Heat Map");
 
 HINSTANCE hInst;
@@ -44,6 +49,7 @@ HINSTANCE hInst;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow)
 {
+	
 	// Pick 20 distinct regions of random sizes from 10 to 100
 	// regions start from 0-900,0-900
 	// regions have 0-1000 drops
@@ -53,7 +59,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		int starty = rand() % 900;
 		int endx = startx + rand() % 90 + 10;
 		int endy = starty + rand() % 90 + 10;
-		int drops = rand() % 1000;
+		int drops = rand() % 10000;
 		for(int j = 0; j < drops; j++) {
 			HeatMap.AddValue(GOLD_DROP, 1, (rand() % (endx - startx)) + startx, (rand() % (endy - starty)) + starty);
 		}
@@ -99,18 +105,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         return 1;
     }
 
-    hInst = hInstance; // Store instance handle in our global variable
+    hInst = hInstance;
 
-    // The parameters to CreateWindow explained:
-    // szWindowClass: the name of the application
-    // szTitle: the text that appears in the title bar
-    // WS_OVERLAPPEDWINDOW: the type of window to create
-    // CW_USEDEFAULT, CW_USEDEFAULT: initial position (x, y)
-    // 500, 100: initial size (width, length)
-    // NULL: the parent of this window
-    // NULL: this application dows not have a menu bar
-    // hInstance: the first parameter from WinMain
-    // NULL: not used in this application
     HWND hWnd = CreateWindow(
         szWindowClass,
         szTitle,
