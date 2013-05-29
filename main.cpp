@@ -11,25 +11,24 @@ int main()
 
 	HEAT_MAP HeatMap(1);
 
+	// 20 million random drops from 0,0 to 10000,10000
 	for(int i = 0; i < 10000000; i++) {
 		HeatMap.AddValue(GOLD_DROP, 1, rand() % 10000, rand() % 10000);
 	}
-
 	for(int i = 0; i < 10000000; i++) {
 		HeatMap.AddValue(MONSTER_KILL, 1, rand() % 10000, rand() % 10000);
 	}
 
+	// 2 million random drops from 0,0 to 10,10
 	for(int i = 0; i < 1000000; i++) {
 		HeatMap.AddValue(GOLD_DROP, 1, rand() % 10, rand() % 10);
 	}
-
 	for(int i = 0; i < 1000000; i++) {
 		HeatMap.AddValue(MONSTER_KILL, 1, rand() % 10, rand() % 10);
 	}
 
 	HeatMap.Draw(GOLD_DROP,0,0,30,30);
 	HeatMap.Draw(MONSTER_KILL,0,0,30,30);
-	sprintf_s(string, 256, "Monster Kill Value From 22-23/22-23: %1.0f\n", HeatMap.GetValue(MONSTER_KILL,22,23,22,23));
 	OutputDebugString(string);
 
 	int BufferSize = 500*1024*1024;

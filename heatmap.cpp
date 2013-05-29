@@ -313,18 +313,5 @@ void HEAT_MAP::Draw( COUNTER_VALUE Value, int startx, int starty, int endx, int 
 		sprintf_s(string, 256, "\n", y);
 		OutputDebugString(string);
 	}
-	/*
-	int TotalNodes = 0;
-	u32 Hash;
-	NODE* Node = (NODE*)NodeMap.GetFirst(&Hash);
-	while( Node != null ) {
-		sprintf_s(string, 256, "Node found: %d %d\n", Node->x, Node->y);
-		OutputDebugString(string);
-		Node = (NODE*)NodeMap.GetNext(Hash, Node, &Hash);
-		TotalNodes++;
-	}
-	sprintf_s(string, 256, "Total Nodes: %d\n", TotalNodes);
-	OutputDebugString(string);
-	*/
 }
 //******************************************************************************

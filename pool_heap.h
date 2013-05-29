@@ -33,6 +33,11 @@ public:
 private:
 	void Grow();
 
+	// TEST FUNCTIONS
+	uint GetNumFreeNodes();
+	void TestFree();
+
+
 	struct BLOCK {
 		BLOCK* Next;
 	};

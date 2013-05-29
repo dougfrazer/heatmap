@@ -17,10 +17,15 @@ POOL_HEAP::POOL_HEAP(int _BlockSize) :
 	assert(BlockSize > sizeof(BLOCK)); // we reuse free space to store data, so make sure its at least big enough
 	memset(Segments, '\0', sizeof(Segments));
 	Grow();
+
+	TestFree();
 }
 //******************************************************************************
 POOL_HEAP::~POOL_HEAP()
 {
+	for(int Segment = 0; Segment <= LastSegment; Segment++) {
+		Free(Segments[Segment].Memory, __FILE__, __LINE__);
+	}
 }
 //******************************************************************************
 void* POOL_HEAP::GetBlock()
@@ -87,5 +92,72 @@ void POOL_HEAP::Grow()
 
 	Segments[LastSegment].FreeBlock = (BLOCK*)Segments[LastSegment].Memory;
 	LastSegment++;
+}
+//******************************************************************************
+
+//******************************************************************************
+// TEST CODE
+//******************************************************************************
+uint POOL_HEAP::GetNumFreeNodes()
+{
+	int counter = 0;
+	for(int Segment = 0; Segment <= LastSegment; Segment++) {
+		BLOCK* Curr = Segments[Segment].FreeBlock;
+		while(Curr != null) {
+			counter++;
+			Curr = Curr->Next;
+		}
+	}
+	return counter;
+}
+//******************************************************************************
+void POOL_HEAP::TestFree()
+{
+	uint FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 64);
+	BLOCK* Block1 = (BLOCK*)GetBlock();
+	BLOCK* Block2 = (BLOCK*)GetBlock();
+	BLOCK* Block3 = (BLOCK*)GetBlock();
+	BLOCK* Block4 = (BLOCK*)GetBlock();
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 60);
+	FreeBlock(Block3);
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 61);
+	FreeBlock(Block1);
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 62);
+	FreeBlock(Block2);
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 63);
+	FreeBlock(Block4);
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 64);
+
+	BLOCK* Temp[128];
+	for(int i = 0; i < 65; i++) {
+		Temp[i] = (BLOCK*)GetBlock();
+	}
+
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 127);
+
+	FreeBlock(Temp[13]);
+
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 128);
+
+	FreeBlock(Temp[64]);
+
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 129);
+	
+	for(int i = 0; i < 65; i++) {
+		if(i == 13 || i == 64) continue;
+		FreeBlock(Temp[i]);
+	}
+
+	FreeBlocks = GetNumFreeNodes();
+	assert(FreeBlocks == 128 + 64);
 }
 //******************************************************************************
