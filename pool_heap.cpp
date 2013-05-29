@@ -21,7 +21,7 @@ POOL_HEAP::POOL_HEAP(int _BlockSize) :
 //******************************************************************************
 POOL_HEAP::~POOL_HEAP()
 {
-	for(int Segment = 0; Segment <= LastSegment; Segment++) {
+	for(int Segment = 0; Segment < LastSegment; Segment++) {
 		Free(Segments[Segment].Memory, __FILE__, __LINE__);
 	}
 }
