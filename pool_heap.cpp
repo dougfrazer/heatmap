@@ -17,8 +17,6 @@ POOL_HEAP::POOL_HEAP(int _BlockSize) :
 	assert(BlockSize > sizeof(BLOCK)); // we reuse free space to store data, so make sure its at least big enough
 	memset(Segments, '\0', sizeof(Segments));
 	Grow();
-
-	TestFree();
 }
 //******************************************************************************
 POOL_HEAP::~POOL_HEAP()
