@@ -7,12 +7,14 @@
 #include "windows.h"
 
 typedef unsigned int uint;
+typedef unsigned long long u64;
 typedef unsigned int u32;
 typedef unsigned char u8;
 
 #define null            0
 #define error(...)      assert(false)
 #define countof(x)      sizeof(x)/sizeof(*x)
+#define bitcountof(x)   sizeof(x)*8
 #define alignup(x, v)   ( x + v - 1 & ~(v - 1) )
 #define clamp(x, min, max) ( x > max ? max : x < min ? min : x )
 inline void pointer_make_relative(void** x) { *x = (void*)((intptr_t)*x + 1 - (intptr_t)x); }

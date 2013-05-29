@@ -24,8 +24,6 @@ public:
 	~HASH_MAP();
 
 public:
-	void  Init();
-	void  Deinit();
 	bool  Insert(u32 Hash, void* val);
 	bool  Remove(u32 Hash);
 	void* GetValue(u32 Hash);

@@ -16,14 +16,12 @@ HEAT_MAP::HEAT_MAP( int _Resolution ) :
 	Resolution(_Resolution),
 	CounterHeap(sizeof(COUNTER)),
 	NodeHeap(sizeof(NODE)),
-	NodeMap(1024)
+	NodeMap(1 * 1024 * 1024)  // assume millions of nodes
 {
-	NodeMap.Init();
 }
 //******************************************************************************
 HEAT_MAP::~HEAT_MAP()
 {
-	NodeMap.Deinit();
 }
 //******************************************************************************
 
@@ -33,8 +31,6 @@ HEAT_MAP::~HEAT_MAP()
 //******************************************************************************
 void HEAT_MAP::AddValue( COUNTER_VALUE Value, float value, int x, int y )
 {
-	int ResolutionX = x/Resolution;
-	int ResolutionY = y/Resolution;
 	NODE* Node = FindNode(x,y);
 	if(Node == null) {
 		Node = AllocateNode(x,y);

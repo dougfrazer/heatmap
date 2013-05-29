@@ -21,42 +21,36 @@ HASH_MAP::HASH_MAP(uint _NumBuckets) :
 	NumBuckets(_NumBuckets)
 {
 	Size = 0;
+	int BufferSize = alignup( NumBuckets*sizeof(BUCKET*), 8 );
+	Buckets = (BUCKET**)Malloc( BufferSize, __FILE__, __LINE__ );
+	if(Buckets == null) {
+		error("Out of memory");
+	}
+
+	memset(Buckets, '\0', BufferSize);
 }
 //*****************************************************************************
 HASH_MAP::~HASH_MAP()
 {	
+	BUCKET* Bucket;
+	BUCKET* NextBucket;
+
+	if(Buckets == null) return;
+	for(uint i = 0; i < NumBuckets; i++) {
+		Bucket = Buckets[i];
+		while(Bucket != null) {
+			NextBucket = Bucket->next;
+			FreeBucket(Bucket);
+			Bucket = NextBucket;
+		}
+	}
+	Free(Buckets, __FILE__, __LINE__);
 }
 //*****************************************************************************
 
 
 //*****************************************************************************
 // Public Interface
-//*****************************************************************************
-void HASH_MAP::Init()
-{
-	int BufferSize = alignup( NumBuckets*sizeof(BUCKET*), 8 );
-    Buckets = (BUCKET**)Malloc( BufferSize, __FILE__, __LINE__ );
-    if(Buckets == null) return;
-
-    memset(Buckets, '\0', BufferSize);
-}
-//*****************************************************************************
-void HASH_MAP::Deinit()
-{
-    BUCKET* Bucket;
-    BUCKET* NextBucket;
-
-    if(Buckets == null) return;
-    for(uint i = 0; i < NumBuckets; i++) {
-        Bucket = Buckets[i];
-        while(Bucket != null) {
-            NextBucket = Bucket->next;
-            FreeBucket(Bucket);
-            Bucket = NextBucket;
-        }
-    }
-    Free(Buckets, __FILE__, __LINE__);
-}
 //*****************************************************************************
 bool HASH_MAP::Insert(u32 Hash, void* val)
 {
@@ -142,7 +136,9 @@ bool HASH_MAP::InsertInternal(u32 Hash, void* val)
     if(Prev != null) Prev->next = *Bucket;
     Size++;
 
-	if(Size/(float)NumBuckets > 0.75) {
+	// Standard rehashing occurs at 0.75 load factor
+	// but for our case, 2.0 works too
+	if(Size/(float)NumBuckets > 2.0) {
 		if(!Resize(NumBuckets * 2)) {
 			return false;
 		}
@@ -169,12 +165,6 @@ bool HASH_MAP::InsertInternal(BUCKET* Bucket)
 	(*BucketLoc)->next = null;
     if(Prev != null) Prev->next = *BucketLoc;
     Size++;
-
-	if(Size/(float)NumBuckets > 0.75) {
-		if(!Resize(NumBuckets * 2)) {
-			return false;
-		}
-	}
 
     return true;
 }
@@ -239,9 +229,12 @@ void* HASH_MAP::GetFirst(u32* Hash)
 //*****************************************************************************
 void* HASH_MAP::GetNext(u32 Hash, void* Data, u32* OutHash)
 {
-	BUCKET* Bucket = Buckets[Hash % NumBuckets];
+	int Index = Hash % NumBuckets;
+	BUCKET* Bucket = Buckets[Index];
 	bool BucketFound = false;
 
+	// Make sure we can find this data, see if theres another bucket that hashed
+	// to the same value
 	while(Bucket != null) {
 		if(Bucket->val == Data) {
 			BucketFound = true;
@@ -254,7 +247,8 @@ void* HASH_MAP::GetNext(u32 Hash, void* Data, u32* OutHash)
 	}
 	assert(BucketFound);
 
-	for(uint i = Hash % NumBuckets + 1; i < NumBuckets; i++) {
+	// Continue searching from Index + 1 to NumBuckets for next non-zero hash entry
+	for(uint i = Index + 1; i < NumBuckets; i++) {
 		if(Buckets[i] != null) {
 			*OutHash = Buckets[i]->hash;
 			return Buckets[i]->val;
