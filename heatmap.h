@@ -22,19 +22,7 @@ enum COUNTER_VALUE
 	MAX_COUNTER_VALUE,
 };
 
-struct COUNTER
-{
-	COUNTER_VALUE Value;
-	float v;
-	COUNTER* Next;
-};
 
-struct NODE
-{
-	int x;
-	int y;
-	COUNTER* Counters;
-};
 
 
 class HEAT_MAP
@@ -53,6 +41,21 @@ public:
 	void Draw        ( COUNTER_VALUE Value, int startx, int starty, int endx, int endy );
 
 private:
+	// A single value within a node
+	struct COUNTER {
+		COUNTER_VALUE Value;
+		float v;
+		COUNTER* Next;
+	};
+
+	// A single location, represented by an x,y coordinate.
+	// Has many counters.
+	struct NODE {
+		int x;
+		int y;
+		COUNTER* Counters;
+	};
+
 	// Helper Functions
 	NODE* FindNode         ( int x, int y );
 	NODE* AllocateNode     ( int x, int y );

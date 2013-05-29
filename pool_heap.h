@@ -4,12 +4,14 @@
 //
 //   This pool heap allocates blocks of a fixed size, configured at instantiation.
 //
-//   It will dynamically resize itself by allocating a segment double the size of
-//   the previous segment, effectively tripling the capacity, because it does not
-//   free the previous segment.  This is done as an effort to prevent fragmentation.
+//   It will dynamically resize itself by allocating a segment equal to the size of
+//   the previously allocated segment, approximately doubling its capacity.
+//   It does not free the old memory, but continues using it as an old "segment".
+//   This is done as an effort to prevent fragmentation.
 //
-//   We will store in our free memory a linked list to the next free block.  This is
-//   done as an effort to reduce allocation overhead (to zero).
+//   We will store in our free memory a linked list to the next free block.  We use
+//   a linked list to increase allocation speed to O(1), and we store it in our free
+//   memory to reduce allocation overhead (to zero).
 //
 // @author Doug Frazer
 // May 2013

@@ -166,12 +166,12 @@ void HEAT_MAP::Deserialize( void* Buffer, size_t size )
 //******************************************************************************
 // Private Interface
 //******************************************************************************
-NODE* HEAT_MAP::FindNode( int x, int y )
+HEAT_MAP::NODE* HEAT_MAP::FindNode( int x, int y )
 {
 	return (NODE*)NodeMap.Find(CoordinateToZHash(x/Resolution,y/Resolution));
 }
 //******************************************************************************
-NODE* HEAT_MAP::AllocateNode( int x, int y )
+HEAT_MAP::NODE* HEAT_MAP::AllocateNode( int x, int y )
 {
 	NODE* NewNode = GetFreeNode();
 	NewNode->x = x;
@@ -212,12 +212,12 @@ float HEAT_MAP::GetValueFromNode( NODE* Node, COUNTER_VALUE Value )
 	return 0.0;
 }
 //******************************************************************************
-COUNTER* HEAT_MAP::GetFreeCounter( void )
+HEAT_MAP::COUNTER* HEAT_MAP::GetFreeCounter( void )
 {
 	return (COUNTER*)CounterHeap.GetBlock();
 }
 //******************************************************************************
-NODE* HEAT_MAP::GetFreeNode( void )
+HEAT_MAP::NODE* HEAT_MAP::GetFreeNode( void )
 {
 	return (NODE*)NodeHeap.GetBlock();
 }

@@ -70,7 +70,7 @@ void POOL_HEAP::Grow()
 {
 	assert(LastSegment >= 0 && LastSegment < countof(Segments));
 	int BufferSize = 0;
-	int NumBlocks = 0x1 << (LastSegment + MIN_BLOCKS_PER_NODE_LOG_2);
+	int NumBlocks = 0x1 << (LastSegment + MIN_BLOCKS_PER_NODE_LOG_2 - 1);
 	BufferSize += NumBlocks * BlockSize;
 	assert(BufferSize > 0);
 	void* Buffer = Malloc(BufferSize, __FILE__, __LINE__);
