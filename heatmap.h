@@ -60,6 +60,7 @@ private:
 	void  AddValueToNode   ( NODE* Node, COUNTER_VALUE Value, float v );
 	u32   CoordinateToZHash( const int _x, const int _y );
 	float GetValueFromNode ( NODE* Node, COUNTER_VALUE Value );
+	void  CreateAlphaBitmap( HDC hdc, HBITMAP* hbitmap, uint Height, uint Width );
 
 	// Data
 	int       Resolution;

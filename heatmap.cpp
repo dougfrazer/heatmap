@@ -8,6 +8,7 @@
 
 #include "heatmap.h"
 
+#include <math.h>
 
 //******************************************************************************
 // Constructor/Destructor
@@ -248,19 +249,22 @@ u32 HEAT_MAP::CoordinateToZHash( const int _x, const int _y )
     return z;
 }
 //******************************************************************************
-void HEAT_MAP::DrawBitmap( HDC hdc, COUNTER_VALUE Value, int startx, int starty, int endx, int endy )
+void HEAT_MAP::DrawBitmap( HDC hdcDest, COUNTER_VALUE Value, int startx, int starty, int endx, int endy )
 {
+	uint DotWidth = 50;
+	uint DotHeight = 50;
+
 	// Create some windows objects
-	HBITMAP Bitmap = CreateCompatibleBitmap(hdc, endx - startx, endy - starty);
-	SelectObject(hdc, Bitmap);
-	
-	// Fill screen with black
-	RECT Rect;
-	Rect.left = startx;
-	Rect.top = starty;
-	Rect.bottom = endy;
-	Rect.right = endx;
-	FillRect(hdc, &Rect, CreateSolidBrush(RGB(0,0,0)));
+	BLENDFUNCTION bf;
+	bf.BlendOp  = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 0x7f;
+	bf.AlphaFormat = AC_SRC_ALPHA;
+
+	HDC hdcSource = CreateCompatibleDC( GetDC(0) );
+	HBITMAP Dot;
+	CreateAlphaBitmap( hdcSource, &Dot, DotHeight, DotWidth);
+	SelectObject( hdcSource, Dot );
 
 	// Write out the values we have
 	uint Hash;
@@ -271,12 +275,47 @@ void HEAT_MAP::DrawBitmap( HDC hdc, COUNTER_VALUE Value, int startx, int starty,
 		Counter = Node->Counters;
 		while(Counter != null) {
 			if(Counter->Value == Value) {
-				int r = clamp((int)Counter->v, 0, 10);
-				r = (int)LinearInterpolate(r, 0, 10, 0, 255);
-				SetPixel(hdc, Node->x, Node->y, RGB(r,0,0));
+				if(!AlphaBlend( hdcDest, Node->x, Node->y, DotHeight, DotWidth, hdcSource, 0, 0, DotHeight, DotWidth, bf )) {
+					PrintError(TEXT("AlphaBlend"));
+				}
 			}
 			Counter = Counter->Next;
 		}
 		Node = (NODE*)NodeMap.GetNext(Hash, Node, &Hash);
 	}
+	
 }
+//******************************************************************************
+// TODO: This function should probably not exist and we should load a file that
+// represents our alpha map... but windows APIs suck so this is easier for now
+//******************************************************************************
+void HEAT_MAP::CreateAlphaBitmap(HDC hdc, HBITMAP* hbitmap, uint Height, uint Width)
+{
+    BITMAPINFO bmi;        // bitmap header
+	VOID *pvBits;          // pointer to DIB section 
+
+	// setup bitmap info  
+    // set the bitmap width and height to 60% of the width and height of each of the three horizontal areas. Later on, the blending will occur in the center of each of the three areas. 
+    ZeroMemory(&bmi, sizeof(BITMAPINFO));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = Width;
+    bmi.bmiHeader.biHeight = Height;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;         // four 8-bit components 
+    bmi.bmiHeader.biCompression = BI_RGB;
+    bmi.bmiHeader.biSizeImage = Width * Height * 4;
+
+	*hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+	SelectObject(hdc, hbitmap);
+
+	// Set everything to black, with an alpha channel linear fading in until the center
+	for (uint y = 0; y < Height; y++) {
+		for (uint x = 0; x < Width; x++) {
+			float Distance = sqrt( (x - (Height / (float)2))*(x - (Height / (float)2)) + (y - (Width / (float)2))*(y - (Width / (float)2)) );
+			u8 Alpha = Distance > Height / 2 ? 0x0 : LinearInterpolate( Distance, 0, Height / 2, 0xFF, 0 );
+
+			((UINT32 *)pvBits)[x + y * Width] = 0x00000000 | (u32)Alpha << 24;
+		}
+	}
+}
+//******************************************************************************

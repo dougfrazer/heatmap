@@ -23,12 +23,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
+		{
+			hdc = BeginPaint(hwnd, &ps);
 
-		HeatMap.DrawBitmap(hdc, GOLD_DROP, 0,0,1000,1000);
+			RECT Rect;
+			GetClientRect( hwnd, &Rect );
+			HRGN bgRgn = CreateRectRgnIndirect(&Rect);
+			HBRUSH hBrush = CreateSolidBrush(RGB(200,200,200));
+			FillRgn(hdc, bgRgn, hBrush);
+			HeatMap.DrawBitmap(hdc, GOLD_DROP, 0, 0, 1000, 1000);
 
-		EndPaint(hwnd, &ps);
-		break;
+			EndPaint(hwnd, &ps);
+			break;
+		}
 	case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -55,11 +62,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// regions have 0-1000 drops
 	srand(time(null));
 	for(int i = 0; i < 20; i++) {
-		int startx = rand() % 900;
-		int starty = rand() % 900;
-		int endx = startx + rand() % 90 + 10;
-		int endy = starty + rand() % 90 + 10;
-		int drops = rand() % 10000;
+		int startx = rand() % 800;
+		int starty = rand() % 800;
+		int endx = startx + rand() % 200 + 10;
+		int endy = starty + rand() % 200 + 10;
+		int drops = rand() % 100;
 		for(int j = 0; j < drops; j++) {
 			HeatMap.AddValue(GOLD_DROP, 1, (rand() % (endx - startx)) + startx, (rand() % (endy - starty)) + starty);
 		}
