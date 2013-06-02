@@ -22,7 +22,7 @@ POOL_HEAP::POOL_HEAP(int _BlockSize) :
 POOL_HEAP::~POOL_HEAP()
 {
 	for(int Segment = 0; Segment < LastSegment; Segment++) {
-		Free(Segments[Segment].Memory, __FILE__, __LINE__);
+		Free(Segments[Segment].Memory);
 	}
 }
 //******************************************************************************
@@ -72,7 +72,7 @@ void POOL_HEAP::Grow()
 	int NumBlocks = LastSegment == 0 ? 0x1 << (LastSegment + MIN_BLOCKS_PER_NODE_LOG_2) : 0x1 << (LastSegment + MIN_BLOCKS_PER_NODE_LOG_2 - 1);
 	BufferSize += NumBlocks * BlockSize;
 	assert(BufferSize > 0);
-	void* Buffer = Malloc(BufferSize, __FILE__, __LINE__);
+	void* Buffer = Malloc(BufferSize);
 	assert(Buffer != null);
 
 	Segments[LastSegment].Memory = Buffer;

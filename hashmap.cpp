@@ -22,7 +22,7 @@ HASH_MAP::HASH_MAP(uint _NumBuckets) :
 {
 	Size = 0;
 	int BufferSize = alignup( NumBuckets*sizeof(BUCKET*), 8 );
-	Buckets = (BUCKET**)Malloc( BufferSize, __FILE__, __LINE__ );
+	Buckets = (BUCKET**)Malloc( BufferSize );
 	if(Buckets == null) {
 		error("Out of memory");
 	}
@@ -32,7 +32,7 @@ HASH_MAP::HASH_MAP(uint _NumBuckets) :
 //*****************************************************************************
 HASH_MAP::~HASH_MAP()
 {	
-	Free(Buckets, __FILE__, __LINE__);
+	Free(Buckets);
 }
 //*****************************************************************************
 
@@ -166,7 +166,7 @@ bool HASH_MAP::Resize(uint NewNumBuckets)
     uint     OldNumBuckets;
 
 	int BufferSize = alignup(NewNumBuckets*sizeof(BUCKET*),8);
-    NewBuckets = (BUCKET**)Malloc(BufferSize, __FILE__, __LINE__);
+    NewBuckets = (BUCKET**)Malloc(BufferSize);
     if(NewBuckets == null) {
         error("Failed to alloc new space for resizing");
         return false;
@@ -190,7 +190,7 @@ bool HASH_MAP::Resize(uint NewNumBuckets)
             Bucket = NextBucket;
         }
     }
-    Free(OldBuckets, __FILE__, __LINE__);
+    Free(OldBuckets);
     return true;
 }
 //*****************************************************************************
